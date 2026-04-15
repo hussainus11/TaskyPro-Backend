@@ -1,0 +1,49 @@
+{
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "scripts": {
+    "dev": "tsx server.ts",
+    "generate": "prisma generate",
+    "postinstall": "prisma generate",
+    "seed": "npx prisma db seed"
+  },
+  "dependencies": {
+    "@jitsi/react-sdk": "^1.4.4",
+    "@prisma/adapter-pg": "^7.1.0",
+    "@prisma/client": "^7.1.0",
+    "@types/multer": "^2.0.0",
+    "@xyflow/react": "^12.10.0",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "docx": "^9.5.1",
+    "dotenv": "^17.2.3",
+    "emoji-picker-react": "^4.17.3",
+    "exceljs": "^4.4.0",
+    "express": "^5.2.1",
+    "google-auth-library": "^10.5.0",
+    "imap": "^0.8.19",
+    "jsonwebtoken": "^9.0.3",
+    "luckysheet": "^2.1.13",
+    "mailparser": "^3.9.3",
+    "multer": "^2.0.2",
+    "nodemailer": "^7.0.11",
+    "pg": "^8.16.3",
+    "pptxgenjs": "^4.0.1",
+    "prisma": "^7.1.0",
+    "socket.io": "^4.8.3",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/imap": "^0.8.43",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^25.0.8",
+    "@types/nodemailer": "^7.0.4",
+    "@types/pg": "^8.16.0",
+    "@types/uuid": "^10.0.0",
+    "tsx": "^4.21.0"
+  }
+}

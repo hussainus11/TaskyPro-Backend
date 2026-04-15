@@ -1,0 +1,69 @@
+-- AlterEnum - Add Free and Pro values to Plan enum
+-- These must be in separate transactions
+
+-- Add Free value
+ALTER TYPE "Plan" ADD VALUE IF NOT EXISTS 'Free';
+
+-- Note: Pro value will be added in the next statement
+-- PostgreSQL requires enum values to be committed before use
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
