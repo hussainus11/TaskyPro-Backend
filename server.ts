@@ -100,6 +100,10 @@ const PORT = process.env.PORT || 5001;
 app.use(cors());
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.send("API is running 🚀");
+});
+
 // Serve static files from the files directory
 app.use('/files', express.static(path.join(process.cwd(), 'files')));
 // Also serve from uploads directory for backward compatibility
