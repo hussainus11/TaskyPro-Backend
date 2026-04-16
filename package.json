@@ -4,6 +4,7 @@
   },
   "scripts": {
     "dev": "tsx server.ts",
+    "start": "tsx server.ts",
     "generate": "prisma generate",
     "postinstall": "prisma generate",
     "seed": "npx prisma db seed"
