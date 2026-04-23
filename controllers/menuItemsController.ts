@@ -114,7 +114,14 @@ export const getMenuItems = async (req: Request, res: Response) => {
       // De-dupe by href/title, preferring more specific items if present.
       const byKey = new Map<string, any>();
       for (const it of grouped[group]) {
-        const key = (it.href || '').trim() || `__title:${String(it.title || '').trim().toLowerCase()}`;
+        const href = String(it.href || "").trim();
+        // Many top-level "folder" menus use href "#" (Collaboration, CRM, Widgets, etc.).
+        // If we de-dupe purely by href, all "#" items collide and only one survives.
+        // Use title-based key for "#" (and empty) hrefs to keep distinct menus.
+        const key =
+          !href || href === "#"
+            ? `__title:${String(it.title || "").trim().toLowerCase()}`
+            : href;
         const existing = byKey.get(key);
         if (!existing) {
           byKey.set(key, it);
