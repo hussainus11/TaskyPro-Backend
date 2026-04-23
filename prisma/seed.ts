@@ -6,6 +6,7 @@ import { promises as fs } from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from 'node:url';
 import { seedDealDashboardsMenu } from "./seed-deal-dashboards-menu";
+import { seedMenuItems } from "./seed-menu-items";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -22,6 +23,7 @@ async function main() {
 
   // Ensure menu item exists (idempotent)
   await seedDealDashboardsMenu(prisma);
+  await seedMenuItems();
 
   // Create a test user if it doesn't exist
   const testUser = await prisma.user.upsert({

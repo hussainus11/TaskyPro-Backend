@@ -97,7 +97,13 @@ import { errorLoggerMiddleware } from './middleware/errorLogger';
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "https://taskypro-frontend-production.up.railway.app"
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 app.get("/", (req, res) => {
