@@ -250,7 +250,7 @@ export const updateBillingSettings = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     const userIdNum = parseInt(userId);
-    const { billingPlan, nextPaymentDate, paymentMethods } = req.body;
+    const { billingPlan, nextPaymentDate, paymentMethods, transactions } = req.body;
 
     // Get or create settings
     let settings = await prisma.userSettings.findUnique({
@@ -261,6 +261,7 @@ export const updateBillingSettings = async (req: Request, res: Response) => {
     if (billingPlan !== undefined) updateData.billingPlan = billingPlan;
     if (nextPaymentDate !== undefined) updateData.nextPaymentDate = nextPaymentDate ? new Date(nextPaymentDate) : null;
     if (paymentMethods !== undefined) updateData.paymentMethods = paymentMethods;
+    if (transactions !== undefined) updateData.billingTransactions = transactions;
 
     if (settings) {
       settings = await prisma.userSettings.update({
@@ -317,12 +318,19 @@ export const updateBillingSettings = async (req: Request, res: Response) => {
   }
 };
 
-// Get billing transactions (this would typically come from a separate transactions table)
+// Get billing transactions
 export const getBillingTransactions = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
-    // For now, return empty array. In a real app, this would query a transactions table
-    res.json([]);
+    const userIdNum = parseInt(userId);
+
+    const settings = await prisma.userSettings.findUnique({
+      where: { userId: userIdNum },
+      select: { billingTransactions: true }
+    });
+
+    const transactions = Array.isArray(settings?.billingTransactions) ? settings.billingTransactions : [];
+    res.json(transactions);
   } catch (error: any) {
     console.error('Failed to fetch billing transactions:', error);
     res.status(500).json({ error: 'Failed to fetch billing transactions', details: error.message });
