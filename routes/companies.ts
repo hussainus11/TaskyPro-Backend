@@ -14,8 +14,8 @@ const router = Router();
 router.get('/', authenticate, getCompanies);
 router.get('/slug/:slug', getCompanyBySlug);
 router.get('/:id', getCompanyById);
-router.post('/', createCompany);
-router.put('/:id', updateCompany);
-router.delete('/:id', deleteCompany);
+router.post('/', createCompany); // open: self-service tenant signup / onboarding
+router.put('/:id', authenticate, updateCompany);
+router.delete('/:id', authenticate, deleteCompany);
 
 export default router;

@@ -1,10 +1,23 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { prisma } from '../lib/prisma';
 import { logActivity, getUserContext } from '../utils/activityLogger';
+import { AuthRequest, hasCompanyAccess } from '../middleware/auth';
 
-export const getCompanyPlan = async (req: Request, res: Response) => {
+// Reference monthly pricing used only to log a billing transaction amount -
+// there is no payment gateway integration, this mirrors what the plan costs.
+const PLAN_PRICING: Record<string, number> = {
+  Free: 0,
+  Basic: 19,
+  Pro: 49,
+  Enterprise: 99
+};
+
+export const getCompanyPlan = async (req: AuthRequest, res: Response) => {
   try {
     const { companyId } = req.params;
+    if (!hasCompanyAccess(req, parseInt(companyId))) {
+      return res.status(403).json({ error: 'Forbidden: not your company' });
+    }
     const company = await prisma.company.findUnique({
       where: { id: parseInt(companyId) },
       select: {
@@ -29,26 +42,30 @@ export const getCompanyPlan = async (req: Request, res: Response) => {
   }
 };
 
-export const updateCompanyPlan = async (req: Request, res: Response) => {
+export const updateCompanyPlan = async (req: AuthRequest, res: Response) => {
   try {
     const { companyId } = req.params;
     const { plan, billingCycle } = req.body;
-    
+
+    if (!hasCompanyAccess(req, parseInt(companyId))) {
+      return res.status(403).json({ error: 'Forbidden: not your company' });
+    }
+
     // Validate plan
     const validPlans = ['Free', 'Basic', 'Pro', 'Enterprise'];
     if (!validPlans.includes(plan)) {
       return res.status(400).json({ error: 'Invalid plan name' });
     }
-    
+
     // Validate billing cycle if provided (not required for Free plan)
     if (plan !== 'Free' && billingCycle && !['Monthly', 'Yearly'].includes(billingCycle)) {
       return res.status(400).json({ error: 'Invalid billing cycle' });
     }
-    
+
     const company = await prisma.company.findUnique({
       where: { id: parseInt(companyId) }
     });
-    
+
     if (!company) {
       return res.status(404).json({ error: 'Company not found' });
     }
@@ -105,7 +122,21 @@ export const updateCompanyPlan = async (req: Request, res: Response) => {
         });
       }
     }
-    
+
+    // Paid plans start a pending billing transaction, visible to the platform
+    // owner on /platform-billing; activateSubscription() below flips it to paid.
+    if (plan !== 'Free') {
+      await prisma.companyBillingTransaction.create({
+        data: {
+          companyId: updatedCompany.id,
+          plan,
+          amount: PLAN_PRICING[plan] ?? 0,
+          currency: 'USD',
+          status: 'pending'
+        }
+      });
+    }
+
     res.json(updatedCompany);
   } catch (error: any) {
     console.error('Update company plan error:', error);
@@ -113,27 +144,31 @@ export const updateCompanyPlan = async (req: Request, res: Response) => {
   }
 };
 
-export const activateSubscription = async (req: Request, res: Response) => {
+export const activateSubscription = async (req: AuthRequest, res: Response) => {
   try {
     const { companyId } = req.params;
-    
+
+    if (!hasCompanyAccess(req, parseInt(companyId))) {
+      return res.status(403).json({ error: 'Forbidden: not your company' });
+    }
+
     const company = await prisma.company.findUnique({
       where: { id: parseInt(companyId) }
     });
-    
+
     if (!company) {
       return res.status(404).json({ error: 'Company not found' });
     }
-    
+
     // Only activate if plan is not Free and status is Pending
     if (company.plan === 'Free') {
       return res.status(400).json({ error: 'Free plan does not require activation' });
     }
-    
+
     if (company.subscriptionStatus !== 'Pending') {
       return res.status(400).json({ error: 'Subscription is not in pending status' });
     }
-    
+
     const updatedCompany = await prisma.company.update({
       where: { id: parseInt(companyId) },
       data: {
@@ -149,6 +184,18 @@ export const activateSubscription = async (req: Request, res: Response) => {
         billingCycle: true,
       }
     });
+
+    // Flip the most recent pending transaction for this company/plan to paid.
+    const latestPending = await prisma.companyBillingTransaction.findFirst({
+      where: { companyId: updatedCompany.id, status: 'pending' },
+      orderBy: { createdAt: 'desc' }
+    });
+    if (latestPending) {
+      await prisma.companyBillingTransaction.update({
+        where: { id: latestPending.id },
+        data: { status: 'paid' }
+      });
+    }
     
     // Log activity
     const userId = req.body.userId || req.query.userId || req.headers['x-user-id'];

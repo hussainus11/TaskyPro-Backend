@@ -12,11 +12,13 @@ const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email } = req.body;
+    const { email, password } = req.body;
 
-    // TEMPORARY: Only require email, skip password validation
     if (!email) {
       return res.status(400).json({ error: 'Email is required' });
+    }
+    if (!password) {
+      return res.status(400).json({ error: 'Password is required' });
     }
 
     // Trim email to remove whitespace
@@ -30,7 +32,17 @@ export const login = async (req: Request, res: Response) => {
 
     if (!user) {
       console.log(`Login attempt failed: User not found for email: ${trimmedEmail}`);
-      return res.status(401).json({ error: 'User not found' });
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    if (!user.password) {
+      return res.status(401).json({ error: 'This account has no password set. Use "Forgot password" to set one.' });
+    }
+
+    const passwordMatches = await bcrypt.compare(password, user.password);
+    if (!passwordMatches) {
+      console.log(`Login attempt failed: Incorrect password for email: ${trimmedEmail}`);
+      return res.status(401).json({ error: 'Invalid email or password' });
     }
 
     // Check if company trial has expired
@@ -38,16 +50,13 @@ export const login = async (req: Request, res: Response) => {
       const now = new Date();
       const trialEnd = new Date(user.company.trialEndDate);
       if (now > trialEnd) {
-        return res.status(403).json({ 
+        return res.status(403).json({
           error: 'Trial expired',
           message: 'Your trial account has been expired. Please upgrade your plan to continue.',
           trialExpired: true
         });
       }
     }
-
-    // TEMPORARY: Skip all password validations
-    console.log(`⚠️ TEMPORARY: Login successful for user: ${user.email} (password validation bypassed)`);
 
     // Generate JWT token
     const token = jwt.sign(

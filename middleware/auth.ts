@@ -36,6 +36,22 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
   }
 };
 
+export function isPlatformOwner(req: AuthRequest): boolean {
+  return req.user?.company?.isPlatformOwner === true;
+}
+
+// A company can manage its own data; the platform-owner company can manage any company's.
+export function hasCompanyAccess(req: AuthRequest, targetCompanyId: number): boolean {
+  return req.user?.companyId === targetCompanyId || isPlatformOwner(req);
+}
+
+export const requirePlatformOwner = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (!isPlatformOwner(req)) {
+    return res.status(403).json({ error: 'Forbidden: platform owner access required' });
+  }
+  next();
+};
+
 
 
 

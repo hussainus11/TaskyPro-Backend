@@ -1,14 +1,20 @@
 import { Response } from 'express';
-import { AuthRequest } from '../middleware/auth';
+import { AuthRequest, hasCompanyAccess, isPlatformOwner } from '../middleware/auth';
 import { prisma } from '../lib/prisma';
 import { logActivity, getUserContext } from '../utils/activityLogger';
 
 export const getCompanies = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId;
-    
+
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // The platform-owner company can see every tenant; everyone else only sees their own.
+    if (isPlatformOwner(req)) {
+      const companies = await prisma.company.findMany({ orderBy: { id: 'asc' } });
+      return res.json(companies);
     }
 
     // Get user to determine companyId
@@ -25,7 +31,7 @@ export const getCompanies = async (req: AuthRequest, res: Response) => {
     const companies = await prisma.company.findMany({
       where: { id: user.companyId }
     });
-    
+
     res.json(companies);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch companies' });
@@ -98,12 +104,12 @@ async function ensureUniqueSlug(baseSlug: string): Promise<string> {
 // Helper function to clone default form templates for a company
 async function createDefaultTemplates(companyId: number) {
   try {
-    // Find master templates (templates with companyId = null) for LEAD, DEAL, and CONTACT
+    // Find master templates (templates with companyId = null) for LEAD, DEAL, CONTACT, and TASK
     const masterTemplates = await prisma.formTemplate.findMany({
       where: {
         companyId: null,
         entityType: {
-          in: ['LEAD', 'DEAL', 'CONTACT']
+          in: ['LEAD', 'DEAL', 'CONTACT', 'TASK']
         }
       }
     });
@@ -226,10 +232,14 @@ export const createCompany = async (req: Request, res: Response) => {
   }
 };
 
-export const updateCompany = async (req: Request, res: Response) => {
+export const updateCompany = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { name, email, phone, address, website, industry, customFieldsSectionTitle } = req.body;
+
+    if (!hasCompanyAccess(req, parseInt(id))) {
+      return res.status(403).json({ error: 'Forbidden: not your company' });
+    }
 
     // Get company before updating for activity logging
     const existingCompany = await prisma.company.findUnique({
@@ -265,9 +275,13 @@ export const updateCompany = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteCompany = async (req: Request, res: Response) => {
+export const deleteCompany = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+
+    if (!hasCompanyAccess(req, parseInt(id))) {
+      return res.status(403).json({ error: 'Forbidden: not your company' });
+    }
 
     // Get company details before deleting for activity logging
     const company = await prisma.company.findUnique({

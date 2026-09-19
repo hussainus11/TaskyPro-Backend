@@ -36,10 +36,12 @@ model Company {
   trialEndDate             DateTime?
   billingCycle             BillingCycle?           @default(Monthly)
   customFieldsSectionTitle String?                 @default("Custom Fields")
+  isPlatformOwner          Boolean                 @default(false) // Platform-operator company: no expiry, sees Administration menu, manages all tenants
   createdAt                DateTime                @default(now())
   updatedAt                DateTime                @updatedAt
   branches                 Branch[]
   users                    User[]
+  billingTransactions      CompanyBillingTransaction[]
   sections                 FormSection[]
   activities               Activity[]              @relation("CompanyActivities")
   comments                 Comment[]               @relation("CompanyComments")
@@ -706,9 +708,10 @@ model UserSettings {
   language    String?   @default("en")
 
   // Billing settings
-  billingPlan     String?
-  nextPaymentDate DateTime?
-  paymentMethods  Json? // Array of payment method objects
+  billingPlan         String?
+  nextPaymentDate     DateTime?
+  paymentMethods      Json? // Array of payment method objects
+  billingTransactions Json? // Array of transaction records: { id, product, status, date, amount }
 
   // Appearance settings
   theme String? @default("light")
@@ -1657,6 +1660,24 @@ model FormTemplate {
   @@index([workflowId])
   @@index([companyId, branchId])
   @@index([customEntityName])
+}
+
+// Cross-company billing ledger, visible only to the platform-owner company.
+// Rows are created by the subscription flow (controllers/subscriptionController.ts)
+// when a tenant company changes plan / activates its subscription.
+model CompanyBillingTransaction {
+  id        Int      @id @default(autoincrement())
+  companyId Int
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  plan      String
+  amount    Float
+  currency  String   @default("USD")
+  status    String // pending | paid | failed
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([status])
 }
 
 model PricingPlan {
