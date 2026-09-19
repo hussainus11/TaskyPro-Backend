@@ -100,6 +100,7 @@ const PORT = process.env.PORT || 5001;
 app.use(cors({
   origin: [
     "http://localhost:3000",
+    "http://169.58.248.228:3000",
     "https://taskypro-frontend-production.up.railway.app"
   ],
   credentials: true
