@@ -7,6 +7,8 @@ import * as path from "node:path";
 import { fileURLToPath } from 'node:url';
 import { seedDealDashboardsMenu } from "./seed-deal-dashboards-menu";
 import { seedMenuItems } from "./seed-menu-items";
+import { seedFormTemplates } from "./seed-form-templates";
+import { seedAdministrationMenu } from "./seed-administration-menu";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -24,6 +26,13 @@ async function main() {
   // Ensure menu item exists (idempotent)
   await seedDealDashboardsMenu(prisma);
   await seedMenuItems();
+
+  // Master form-builder templates for Lead/Deal/Contact/Task, cloned into
+  // every new company by createDefaultTemplates() in companyController.ts
+  await seedFormTemplates(prisma);
+
+  // Administration menu group, visible only to the platform-owner company
+  await seedAdministrationMenu(prisma);
 
   // Create a test user if it doesn't exist
   const testUser = await prisma.user.upsert({

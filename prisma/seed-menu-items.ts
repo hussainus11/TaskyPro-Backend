@@ -65,7 +65,6 @@ const menuData: MenuSeedGroup[] = [
   {
     group: 'Dashboards',
     items: [
-      { title: 'Default', href: '/dashboard/default', icon: 'ChartPieIcon', order: 0 },
       {
         title: 'Collaboration',
         href: '#',
@@ -149,7 +148,6 @@ const menuData: MenuSeedGroup[] = [
       { title: 'Users', href: '/dashboard/pages/users', icon: 'UsersIcon', order: 0 },
       { title: 'Companies', href: '/dashboard/pages/companies', icon: 'Building2Icon', order: 1 },
       { title: 'Notes', href: '/dashboard/apps/notes', icon: 'StickyNoteIcon', isDataBadge: '8', order: 2 },
-      { title: 'Social Media', href: '/dashboard/apps/social-media', icon: 'MessageSquareHeartIcon', isNew: true, order: 3 },
       { title: 'Mail', href: '/dashboard/apps/mail', icon: 'MailIcon', order: 4 },
       { title: 'Todo List App', href: '/dashboard/apps/todo-list-app', icon: 'SquareCheckIcon', order: 5 },
       { title: 'Calendar', href: '/dashboard/apps/calendar', icon: 'CalendarIcon', order: 6 },
