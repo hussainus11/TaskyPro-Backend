@@ -5,7 +5,6 @@ import { Pool } from 'pg'
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from 'node:url';
-import { seedDealDashboardsMenu } from "./seed-deal-dashboards-menu";
 import { seedMenuItems } from "./seed-menu-items";
 import { seedFormTemplates } from "./seed-form-templates";
 import { seedAdministrationMenu } from "./seed-administration-menu";
@@ -23,8 +22,7 @@ async function main() {
     where: { href: "/dashboard/sales" },
   });
 
-  // Ensure menu item exists (idempotent)
-  await seedDealDashboardsMenu(prisma);
+  // Ensure menu items exist (idempotent; CRM > Dashboards is defined in menuData below)
   await seedMenuItems();
 
   // Master form-builder templates for Lead/Deal/Contact/Task, cloned into

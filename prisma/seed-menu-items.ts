@@ -71,22 +71,22 @@ const menuData: MenuSeedGroup[] = [
         icon: 'UsersIcon',
         order: 1,
         children: [
-          { title: 'Messenger', href: '/dashboard/apps/chat', icon: 'MessageSquareIcon', order: 0 },
-          { title: 'Feed', href: '/dashboard/collaboration/feed', icon: 'FolderDotIcon', order: 1 },
-          { title: 'Collabs', href: '/dashboard/collaboration/collabs', icon: 'ClipboardMinusIcon', order: 2 },
-          { title: 'Online Documents', href: '/dashboard/collaboration/documents', icon: 'ComponentIcon', order: 3 },
+          { title: 'Messenger', href: '/apps/chat', icon: 'MessageSquareIcon', order: 0 },
+          { title: 'Feed', href: '/collaboration/feed', icon: 'FolderDotIcon', order: 1 },
+          { title: 'Collabs', href: '/collaboration/collabs', icon: 'ClipboardMinusIcon', order: 2 },
+          { title: 'Online Documents', href: '/collaboration/documents', icon: 'ComponentIcon', order: 3 },
           {
             title: 'File Manager',
-            href: '/dashboard/file-manager',
+            href: '/file-manager',
             icon: 'FolderIcon',
             order: 4,
             children: [
-              { title: 'Dashboard', href: '/dashboard/file-manager', icon: 'FolderIcon', order: 0 },
-              { title: 'File Manager', href: '/dashboard/apps/file-manager', icon: 'ArchiveRestoreIcon', order: 1 },
+              { title: 'Dashboard', href: '/file-manager', icon: 'FolderIcon', order: 0 },
+              { title: 'File Manager', href: '/apps/file-manager', icon: 'ArchiveRestoreIcon', order: 1 },
             ]
           },
-          { title: 'Work Groups', href: '/dashboard/collaboration/work-groups', icon: 'GroupIcon', order: 5 },
-          { title: 'Boards', href: '/dashboard/collaboration/boards', icon: 'LayoutDashboardIcon', order: 6 },
+          { title: 'Work Groups', href: '/collaboration/work-groups', icon: 'GroupIcon', order: 5 },
+          { title: 'Boards', href: '/collaboration/boards', icon: 'LayoutDashboardIcon', order: 6 },
         ]
       },
       {
@@ -95,14 +95,14 @@ const menuData: MenuSeedGroup[] = [
         icon: 'ShoppingBagIcon',
         order: 2,
         children: [
-          { title: 'E-commerce Dashboard', href: '/dashboard/ecommerce', icon: 'ChartPieIcon', order: 0 },
-          { title: 'Product List', href: '/dashboard/pages/products', icon: 'Package', order: 1 },
-          { title: 'Product Detail', href: '/dashboard/pages/products/1', icon: 'ComponentIcon', order: 2 },
-          { title: 'Add Product', href: '/dashboard/pages/products/create', icon: 'Plus', order: 3 },
-          { title: 'Customers', href: '/dashboard/crm/customers', icon: 'UsersIcon', order: 4 },
-          { title: 'Order List', href: '/dashboard/pages/orders', icon: 'ShoppingCart', order: 5 },
-          { title: 'Order Detail', href: '/dashboard/pages/orders/detail', icon: 'FileText', order: 6 },
-          { title: 'Returns', href: '/dashboard/pages/returns', icon: 'RotateCcw', order: 7 },
+          { title: 'E-commerce Dashboard', href: '/ecommerce', icon: 'ChartPieIcon', order: 0 },
+          { title: 'Product List', href: '/pages/products', icon: 'Package', order: 1 },
+          { title: 'Product Detail', href: '/pages/products/1', icon: 'ComponentIcon', order: 2 },
+          { title: 'Add Product', href: '/pages/products/create', icon: 'Plus', order: 3 },
+          { title: 'Customers', href: '/crm/customers', icon: 'UsersIcon', order: 4 },
+          { title: 'Order List', href: '/pages/orders', icon: 'ShoppingCart', order: 5 },
+          { title: 'Order Detail', href: '/pages/orders/detail', icon: 'FileText', order: 6 },
+          { title: 'Returns', href: '/pages/returns', icon: 'RotateCcw', order: 7 },
         ]
       },
       {
@@ -111,33 +111,34 @@ const menuData: MenuSeedGroup[] = [
         icon: 'ChartBarDecreasingIcon',
         order: 4,
         children: [
-          { title: 'CRM Dashboard', href: '/dashboard/crm', icon: 'ChartPieIcon', order: 0 },
-          { title: 'Leads', href: '/dashboard/crm/leads', icon: 'UserIcon', order: 1 },
-          { title: 'Contacts', href: '/dashboard/crm/contacts', icon: 'UsersIcon', order: 2 },
-          { title: 'Deals', href: '/dashboard/crm/deals', icon: 'BadgeDollarSignIcon', order: 3 },
-          { title: 'Form Builder', href: '/dashboard/pages/form-builder', icon: 'ComponentIcon', order: 4 },
-          { title: 'Settings', href: '/dashboard/crm/settings', icon: 'SettingsIcon', order: 5 },
+          { title: 'CRM Dashboard', href: '/crm', icon: 'ChartPieIcon', order: 0 },
+          { title: 'Leads', href: '/crm/leads', icon: 'UserIcon', order: 1 },
+          { title: 'Contacts', href: '/crm/contacts', icon: 'UsersIcon', order: 2 },
+          { title: 'Deals', href: '/crm/deals', icon: 'BadgeDollarSignIcon', order: 3 },
+          { title: 'Form Builder', href: '/pages/form-builder', icon: 'ComponentIcon', order: 4 },
+          { title: 'Settings', href: '/crm/settings', icon: 'SettingsIcon', order: 5 },
+          { title: 'Dashboards', href: '/crm/deals/dashboards', icon: 'LayoutDashboardIcon', order: 6 },
         ]
       },
       {
         title: 'Project Management',
-        href: '/dashboard/project-management',
+        href: '/project-management',
         icon: 'FolderDotIcon',
         order: 5,
         children: [
-          { title: 'PM Dashboard', href: '/dashboard/project-management', icon: 'LayoutDashboardIcon', order: 0 },
-          { title: 'Project List', href: '/dashboard/project-list', icon: 'List', order: 1 },
-          { title: 'Tasks', href: '/dashboard/apps/tasks', icon: 'ClipboardCheckIcon', order: 2 },
+          { title: 'PM Dashboard', href: '/project-management', icon: 'LayoutDashboardIcon', order: 0 },
+          { title: 'Project List', href: '/project-list', icon: 'List', order: 1 },
+          { title: 'Tasks', href: '/apps/tasks', icon: 'ClipboardCheckIcon', order: 2 },
         ]
       },
       {
         title: 'Payment Dashboard',
-        href: '/dashboard/payment',
+        href: '/payment',
         icon: 'CreditCardIcon',
         order: 6,
         children: [
-          { title: 'Payment Dashboard', href: '/dashboard/payment', icon: 'LayoutDashboardIcon', order: 0 },
-          { title: 'Transactions', href: '/dashboard/payment/transactions', icon: 'WalletMinimalIcon', order: 1 },
+          { title: 'Payment Dashboard', href: '/payment', icon: 'LayoutDashboardIcon', order: 0 },
+          { title: 'Transactions', href: '/payment/transactions', icon: 'WalletMinimalIcon', order: 1 },
         ]
       },
     ]
@@ -145,13 +146,13 @@ const menuData: MenuSeedGroup[] = [
   {
     group: 'Apps',
     items: [
-      { title: 'Users', href: '/dashboard/pages/users', icon: 'UsersIcon', order: 0 },
-      { title: 'Companies', href: '/dashboard/pages/companies', icon: 'Building2Icon', order: 1 },
-      { title: 'Notes', href: '/dashboard/apps/notes', icon: 'StickyNoteIcon', isDataBadge: '8', order: 2 },
-      { title: 'Mail', href: '/dashboard/apps/mail', icon: 'MailIcon', order: 4 },
-      { title: 'Todo List App', href: '/dashboard/apps/todo-list-app', icon: 'SquareCheckIcon', order: 5 },
-      { title: 'Calendar', href: '/dashboard/apps/calendar', icon: 'CalendarIcon', order: 6 },
-      { title: 'POS App', href: '/dashboard/apps/pos-system', icon: 'CookieIcon', order: 8 },
+      { title: 'Users', href: '/pages/users', icon: 'UsersIcon', order: 0 },
+      { title: 'Companies', href: '/pages/companies', icon: 'Building2Icon', order: 1 },
+      { title: 'Notes', href: '/apps/notes', icon: 'StickyNoteIcon', isDataBadge: '8', order: 2 },
+      { title: 'Mail', href: '/apps/mail', icon: 'MailIcon', order: 4 },
+      { title: 'Todo List App', href: '/apps/todo-list-app', icon: 'SquareCheckIcon', order: 5 },
+      { title: 'Calendar', href: '/apps/calendar', icon: 'CalendarIcon', order: 6 },
+      { title: 'POS App', href: '/apps/pos-system', icon: 'CookieIcon', order: 8 },
     ]
   },
   {
@@ -163,14 +164,14 @@ const menuData: MenuSeedGroup[] = [
         icon: 'PuzzleIcon',
         order: 0,
         children: [
-          { title: 'Fitness', href: '/dashboard/widgets/fitness', order: 0 },
-          { title: 'E-commerce', href: '/dashboard/widgets/ecommerce', order: 1 },
-          { title: 'Analytics', href: '/dashboard/widgets/analytics', order: 2 },
+          { title: 'Fitness', href: '/widgets/fitness', order: 0 },
+          { title: 'E-commerce', href: '/widgets/ecommerce', order: 1 },
+          { title: 'Analytics', href: '/widgets/analytics', order: 2 },
         ]
       },
       {
         title: 'Login History',
-        href: '/dashboard/pages/login-history',
+        href: '/pages/login-history',
         icon: 'HistoryIcon',
         order: 1,
       },
@@ -181,8 +182,10 @@ const menuData: MenuSeedGroup[] = [
 async function seedMenuItems() {
   console.log('Seeding menu items...');
 
-  // Clear existing menu items
-  await prisma.menuItem.deleteMany({});
+  // Clear only the global (default) menu items this function owns. Company-specific
+  // rows (e.g. the platform-owner's Administration group, companyId != null) must
+  // survive a reseed - they aren't part of menuData and can't be recreated here.
+  await prisma.menuItem.deleteMany({ where: { companyId: null } });
 
   // Create menu items
   for (const groupData of menuData) {
