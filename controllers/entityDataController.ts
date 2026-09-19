@@ -255,7 +255,14 @@ export const updateEntityData = async (req: AuthRequest, res: Response) => {
       // Build dynamic update query with proper escaping
       const updates: string[] = [];
 
+      // System-managed columns — never update from form data
+      const SKIP_KEYS = new Set([
+        'companyid', 'company_id', 'branchid', 'branch_id',
+        'id', 'created_at', 'createdat', 'updated_at', 'updatedat'
+      ]);
+
       for (const [key, value] of Object.entries(data)) {
+        if (SKIP_KEYS.has(key.toLowerCase())) continue;
         const columnName = key.toLowerCase().replace(/[^a-z0-9_]/g, "_");
         let sqlValue: string;
         if (value === null || value === undefined) {

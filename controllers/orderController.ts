@@ -85,8 +85,12 @@ export const getRecentOrders = async (req: Request, res: Response) => {
 export const getOrderById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const orderId = parseInt(id);
+    if (isNaN(orderId)) {
+      return res.status(400).json({ error: "Invalid order ID" });
+    }
     const order = await prisma.order.findUnique({
-      where: { id: parseInt(id) },
+      where: { id: orderId },
       include: {
         customer: true,
         items: {
@@ -238,6 +242,10 @@ export const createOrder = async (req: Request, res: Response) => {
 export const updateOrder = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const orderId = parseInt(id);
+    if (isNaN(orderId)) {
+      return res.status(400).json({ error: "Invalid order ID" });
+    }
     const updateData: any = {};
 
     const allowedFields = [
@@ -271,7 +279,7 @@ export const updateOrder = async (req: Request, res: Response) => {
     });
 
     const order = await prisma.order.update({
-      where: { id: parseInt(id) },
+      where: { id: orderId },
       data: updateData,
       include: {
         customer: true,
@@ -311,10 +319,14 @@ export const updateOrder = async (req: Request, res: Response) => {
 export const deleteOrder = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const orderId = parseInt(id);
+    if (isNaN(orderId)) {
+      return res.status(400).json({ error: "Invalid order ID" });
+    }
 
     // Get order details before deleting for activity logging
     const order = await prisma.order.findUnique({
-      where: { id: parseInt(id) },
+      where: { id: orderId },
       select: { id: true, orderNumber: true, companyId: true, branchId: true }
     });
 
@@ -331,14 +343,14 @@ export const deleteOrder = async (req: Request, res: Response) => {
             companyId: order.companyId || userContext.companyId || undefined,
             branchId: order.branchId || userContext.branchId || undefined,
             entityType: 'ORDER',
-            entityId: parseInt(id),
+            entityId: orderId,
           });
         }
       }
     }
 
     await prisma.order.delete({
-      where: { id: parseInt(id) },
+      where: { id: orderId },
     });
 
     res.json({ message: "Order deleted successfully" });

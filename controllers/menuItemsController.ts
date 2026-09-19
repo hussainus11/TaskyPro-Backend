@@ -88,22 +88,36 @@ export const getMenuItems = async (req: Request, res: Response) => {
           isNew: item.isNew,
           isDataBadge: item.isDataBadge,
           newTab: item.newTab,
-          // Step 3: Include children sorted by order ASC
-          items: item.children
-            .filter(child => child.parentId !== null) // Ensure children have a parent
-            .sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort children by order ASC (0, 1, 2, ...)
-            .map(child => ({
-              id: child.id,
-              title: child.title,
-              href: child.href,
-              icon: child.icon,
-              order: child.order || 0,
-              isComing: child.isComing,
-              isNew: child.isNew,
-              isDataBadge: child.isDataBadge,
-              newTab: child.newTab,
-              items: [] // Only support 2 levels for now
-            })),
+          // Step 3: Include children deduplicated and sorted by order ASC
+          items: (() => {
+            // Deduplicate children by href, preferring company/branch-specific over global
+            const childByKey = new Map<string, any>();
+            for (const child of item.children.filter(c => c.parentId !== null)) {
+              const href = String(child.href || '').trim();
+              const key = !href || href === '#'
+                ? `__title:${String(child.title || '').trim().toLowerCase()}`
+                : href;
+              const existing = childByKey.get(key);
+              const score = (child.companyId != null ? 1 : 0) + (child.branchId != null ? 1 : 0);
+              if (!existing || score > ((existing.companyId != null ? 1 : 0) + (existing.branchId != null ? 1 : 0))) {
+                childByKey.set(key, child);
+              }
+            }
+            return Array.from(childByKey.values())
+              .sort((a, b) => (a.order || 0) - (b.order || 0))
+              .map(child => ({
+                id: child.id,
+                title: child.title,
+                href: child.href,
+                icon: child.icon,
+                order: child.order || 0,
+                isComing: child.isComing,
+                isNew: child.isNew,
+                isDataBadge: child.isDataBadge,
+                newTab: child.newTab,
+                items: []
+              }));
+          })(),
           __specificity: specificityScore(item),
         });
       }
@@ -312,144 +326,49 @@ export const deleteMenuItem = async (req: Request, res: Response) => {
 // Reorder menu items
 export const reorderMenuItems = async (req: Request, res: Response) => {
   try {
-    const { items, companyId, branchId } = req.body; // Array of { id, order, title, href, icon, group, parentId } objects
+    const { items, companyId } = req.body;
 
     const parsedCompanyId = companyId ? parseInt(companyId as string) : null;
-    const parsedBranchId = branchId ? parseInt(branchId as string) : null;
 
-    // First, resolve all items to their correct database IDs
-    const itemsToProcess = await Promise.all(
+    // Resolve each item to its real database id.
+    // Reorder NEVER creates new rows — it only updates `order` on existing items.
+    const resolvedItems = await Promise.all(
       items.map(async (item: { id: number; order: number; title?: string; href?: string; icon?: string; group?: string; parentId?: number | null }) => {
+        // Fast path: trust the id the client sent
         if (item.id > 0) {
-          // Check if this item exists and belongs to the correct company/branch
-          const existingItem = await prisma.menuItem.findUnique({
-            where: { id: item.id }
-          });
-
-          if (existingItem) {
-            // Check if it belongs to the correct company/branch
-            if (existingItem.companyId === parsedCompanyId && existingItem.branchId === parsedBranchId) {
-              return { ...item, dbId: item.id };
-            } else {
-              // Item exists but for different company/branch, need to find or create a copy
-              const companyBranchItem = await prisma.menuItem.findFirst({
-                where: {
-                  title: item.title || existingItem.title,
-                  href: item.href || existingItem.href,
-                  group: item.group || existingItem.group,
-                  parentId: item.parentId !== undefined ? item.parentId : existingItem.parentId,
-                  companyId: parsedCompanyId,
-                  branchId: parsedBranchId
-                }
-              });
-
-              if (companyBranchItem) {
-                return { ...item, dbId: companyBranchItem.id };
-              } else {
-                // Will create new company/branch specific copy
-                return { 
-                  ...item, 
-                  dbId: null,
-                  title: item.title || existingItem.title,
-                  href: item.href || existingItem.href,
-                  icon: item.icon || existingItem.icon,
-                  group: item.group || existingItem.group
-                };
-              }
-            }
-          } else {
-            // Item with this ID doesn't exist, try to find by other criteria
-            const foundItem = await prisma.menuItem.findFirst({
-              where: {
-                title: item.title || '',
-                href: item.href || '#',
-                group: item.group || null,
-                parentId: item.parentId || null,
-                companyId: parsedCompanyId,
-                branchId: parsedBranchId
-              }
-            });
-
-            if (foundItem) {
-              return { ...item, dbId: foundItem.id };
-            } else {
-              return { ...item, dbId: null }; // Will create new
-            }
-          }
-        } else {
-          // Try to find existing item by title, href, group, companyId, branchId, parentId
-          const existingItem = await prisma.menuItem.findFirst({
-            where: {
-              title: item.title || '',
-              href: item.href || '#',
-              group: item.group || null,
-              parentId: item.parentId || null,
-              companyId: parsedCompanyId,
-              branchId: parsedBranchId
-            }
-          });
-
-          if (existingItem) {
-            return { ...item, dbId: existingItem.id };
-          } else {
-            return { ...item, dbId: null }; // Will create new
-          }
+          const exists = await prisma.menuItem.findUnique({ where: { id: item.id }, select: { id: true } });
+          if (exists) return { order: item.order, dbId: item.id };
         }
+
+        // Fallback: find by title+href+group+parentId, searching both company-specific
+        // and global (companyId=null) rows so global menu items are never missed.
+        const found = await prisma.menuItem.findFirst({
+          where: {
+            title: item.title || '',
+            href: item.href || '#',
+            group: item.group || null,
+            parentId: item.parentId || null,
+            OR: [
+              { companyId: parsedCompanyId },
+              { companyId: null },
+            ],
+          },
+          select: { id: true },
+          orderBy: { id: 'asc' }, // prefer the lowest id (the global record)
+        });
+
+        return found ? { order: item.order, dbId: found.id } : null;
       })
     );
 
-    // Process items: update existing ones and create missing ones
-    // Use updateMany for safety (won't fail if record doesn't exist)
-    const itemsToUpdate = itemsToProcess.filter(item => item.dbId && item.dbId > 0);
-    const itemsToCreate = itemsToProcess.filter(item => !item.dbId || item.dbId === 0);
-    const failedUpdates: typeof itemsToProcess = [];
+    // Update only items we could resolve; skip anything not found (never create)
+    const toUpdate = resolvedItems.filter(Boolean) as { order: number; dbId: number }[];
 
-    // Update existing items using updateMany (safer - won't fail if record doesn't exist)
-    if (itemsToUpdate.length > 0) {
-      const updateResults = await Promise.all(
-        itemsToUpdate.map(async (item: { id: number; order: number; title?: string; href?: string; icon?: string; group?: string; parentId?: number | null; dbId: number | null }) => {
-          // Use updateMany with where clause to ensure record exists and belongs to correct company/branch
-          const result = await prisma.menuItem.updateMany({
-            where: {
-              id: item.dbId!,
-              companyId: parsedCompanyId,
-              branchId: parsedBranchId
-            },
-            data: { order: item.order }
-          });
-
-          // If no record was updated, the item doesn't exist for this company/branch
-          return { item, updated: result.count > 0 };
-        })
-      );
-
-      // Collect items that failed to update
-      updateResults.forEach((result, index) => {
-        if (!result.updated) {
-          failedUpdates.push(itemsToUpdate[index]);
-        }
-      });
-    }
-
-    // Create new items or items that failed to update
-    const allItemsToCreate = [...itemsToCreate, ...failedUpdates];
-    if (allItemsToCreate.length > 0) {
-      await prisma.$transaction(
-        allItemsToCreate.map((item: { id: number; order: number; title?: string; href?: string; icon?: string; group?: string; parentId?: number | null; dbId: number | null }) => {
-          return prisma.menuItem.create({
-            data: {
-              title: item.title || '',
-              href: item.href || '#',
-              icon: item.icon || null,
-              group: item.group || null,
-              parentId: item.parentId || null,
-              order: item.order,
-              isActive: true,
-              companyId: parsedCompanyId,
-              branchId: parsedBranchId
-            }
-          });
-        })
+    if (toUpdate.length > 0) {
+      await Promise.all(
+        toUpdate.map(({ dbId, order }) =>
+          prisma.menuItem.update({ where: { id: dbId }, data: { order } })
+        )
       );
     }
 
