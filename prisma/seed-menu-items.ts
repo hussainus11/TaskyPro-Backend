@@ -147,7 +147,7 @@ const menuData: MenuSeedGroup[] = [
     group: 'Apps',
     items: [
       { title: 'Users', href: '/pages/users', icon: 'UsersIcon', order: 0 },
-      { title: 'Notes', href: '/apps/notes', icon: 'StickyNoteIcon', isDataBadge: '8', order: 2 },
+      { title: 'Notes', href: '/apps/notes', icon: 'StickyNoteIcon', order: 2 },
       { title: 'Automation', href: '/pages/business-processes', icon: 'Workflow', order: 3 },
       { title: 'Mail', href: '/apps/mail', icon: 'MailIcon', order: 4 },
       { title: 'Todo List App', href: '/apps/todo-list-app', icon: 'SquareCheckIcon', order: 5 },
