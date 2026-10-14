@@ -104,12 +104,12 @@ async function ensureUniqueSlug(baseSlug: string): Promise<string> {
 // Helper function to clone default form templates for a company
 async function createDefaultTemplates(companyId: number) {
   try {
-    // Find master templates (templates with companyId = null) for LEAD, DEAL, CONTACT, and TASK
+    // Find master templates (templates with companyId = null) for LEAD, DEAL, CONTACT, TASK, and CUSTOMER
     const masterTemplates = await prisma.formTemplate.findMany({
       where: {
         companyId: null,
         entityType: {
-          in: ['LEAD', 'DEAL', 'CONTACT', 'TASK']
+          in: ['LEAD', 'DEAL', 'CONTACT', 'TASK', 'CUSTOMER']
         }
       }
     });

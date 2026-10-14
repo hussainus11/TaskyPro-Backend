@@ -25,7 +25,7 @@ type SeedSection = {
 type SeedTemplate = {
   name: string;
   description: string;
-  entityType: "LEAD" | "DEAL" | "CONTACT" | "TASK";
+  entityType: "LEAD" | "DEAL" | "CONTACT" | "TASK" | "CUSTOMER";
   sections: SeedSection[];
   fields: SeedField[];
 };
@@ -150,6 +150,22 @@ const TEMPLATES: SeedTemplate[] = [
       },
       { id: "contact-address", sectionId: "contact-details", type: "text", label: "Address", name: "address", width: "half" },
       { id: "contact-notes", sectionId: "contact-details", type: "textarea", label: "Notes", name: "notes", width: "full" }
+    ]
+  },
+  {
+    name: "Customer Form",
+    description: "Default template used to add new customers.",
+    entityType: "CUSTOMER",
+    sections: [{ id: "customer-details", title: "Customer Information", order: 0 }],
+    fields: [
+      { id: "customer-name", sectionId: "customer-details", type: "text", label: "Full Name", name: "name", placeholder: "Jane Doe", required: true, width: "full" },
+      { id: "customer-email", sectionId: "customer-details", type: "email", label: "Email", name: "email", placeholder: "jane@company.com", width: "half" },
+      { id: "customer-phone", sectionId: "customer-details", type: "phone", label: "Phone", name: "phone", placeholder: "+1 555 000 0000", width: "half" },
+      { id: "customer-address", sectionId: "customer-details", type: "text", label: "Address", name: "address", width: "full" },
+      { id: "customer-city", sectionId: "customer-details", type: "text", label: "City", name: "city", width: "third" },
+      { id: "customer-state", sectionId: "customer-details", type: "text", label: "State", name: "state", width: "third" },
+      { id: "customer-postal-code", sectionId: "customer-details", type: "text", label: "Postal Code", name: "postalCode", width: "third" },
+      { id: "customer-country", sectionId: "customer-details", type: "text", label: "Country", name: "country", placeholder: "United States", width: "half" }
     ]
   },
   {
