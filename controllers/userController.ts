@@ -5,6 +5,7 @@ import { formatDateTime } from '../utils/dateTime';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { logActivity, getUserContext } from '../utils/activityLogger';
+import { ensureAdministratorRole } from '../prisma/seed-default-role';
 
 export const getUsers = async (req: AuthRequest, res: Response) => {
   try {
@@ -270,29 +271,48 @@ export const createUser = async (req: Request, res: Response) => {
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, email, country, role, image, status, plan_name, companyId, branchId, phone, location, department } = req.body;
+    const { name, email, country, role, roleId, image, status, plan_name, companyId, branchId, phone, location, department } = req.body;
 
     // Get user before updating for activity logging
     const existingUser = await prisma.user.findUnique({
       where: { id: parseInt(id) },
-      select: { name: true, companyId: true, branchId: true }
+      select: { name: true, companyId: true, branchId: true, roleId: true }
     });
+
+    const nextCompanyId = companyId !== undefined ? (companyId ? parseInt(companyId) : null) : undefined;
+
+    // A company-less user being assigned a company for the first time is the founding
+    // user of that company (teammates invited afterwards go through createUser, which
+    // already sets companyId at creation time). Give them the company's Administrator
+    // role by default unless the caller explicitly chose a different role.
+    let nextRoleId: number | null | undefined =
+      roleId !== undefined ? (roleId ? parseInt(roleId) : null) : undefined;
+    if (
+      nextRoleId === undefined &&
+      existingUser &&
+      !existingUser.companyId &&
+      !existingUser.roleId &&
+      nextCompanyId
+    ) {
+      nextRoleId = await ensureAdministratorRole(prisma, nextCompanyId);
+    }
 
     const user = await prisma.user.update({
       where: { id: parseInt(id) },
-      data: { 
-        name, 
-        email, 
-        country, 
-        role, 
-        image, 
-        status, 
+      data: {
+        name,
+        email,
+        country,
+        role,
+        image,
+        status,
         plan_name,
         phone,
         location,
         department,
-        companyId: companyId !== undefined ? (companyId ? parseInt(companyId) : null) : undefined,
+        companyId: nextCompanyId,
         branchId: branchId !== undefined ? (branchId ? parseInt(branchId) : null) : undefined,
+        roleId: nextRoleId,
       }
     });
 

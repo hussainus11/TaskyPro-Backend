@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { seedMenuItems } from "./seed-menu-items";
 import { seedFormTemplates } from "./seed-form-templates";
 import { seedAdministrationMenu } from "./seed-administration-menu";
+import { seedDefaultRoleForAllCompanies } from "./seed-default-role";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -31,6 +32,10 @@ async function main() {
 
   // Administration menu group, visible only to the platform-owner company
   await seedAdministrationMenu(prisma);
+
+  // Default "Administrator" role (full access, excluding platform admin) for every
+  // company. New companies get it directly from createCompany() in companyController.ts.
+  await seedDefaultRoleForAllCompanies(prisma);
 
   // Create a test user if it doesn't exist
   const testUser = await prisma.user.upsert({

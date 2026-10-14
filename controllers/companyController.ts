@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest, hasCompanyAccess, isPlatformOwner } from '../middleware/auth';
 import { prisma } from '../lib/prisma';
 import { logActivity, getUserContext } from '../utils/activityLogger';
+import { ensureAdministratorRole } from '../prisma/seed-default-role';
 
 export const getCompanies = async (req: AuthRequest, res: Response) => {
   try {
@@ -204,6 +205,9 @@ export const createCompany = async (req: Request, res: Response) => {
 
     // Create default form templates for the company
     await createDefaultTemplates(company.id);
+
+    // Create the default "Administrator" role (full access, excluding platform admin)
+    await ensureAdministratorRole(prisma, company.id);
 
     // Log activity for company creation (get userId from request if available)
     const userId = req.body.userId || req.query.userId || req.headers['x-user-id'];
